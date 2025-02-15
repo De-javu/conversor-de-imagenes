@@ -1,22 +1,25 @@
 import os
+import pikepdf  # Para modificar la versión del PDF
 import img2pdf
 from PIL import Image
 import subprocess
 
 # 📂 Rutas
 CARPETA_ENTRADA = r"D:\xampp\htdocs\pdf_2\images"
-CARPETA_SALIDA = r"D:\xampp\htdocs\pdf_2\imagenes_convertidas_pdf"
+CARPETA_SALIDA_PDF = r"D:\xampp\htdocs\pdf_2\imagenes_convertidas_pdf"
+CARPETA_SALIDA_PDFA = r"D:\xampp\htdocs\pdf_2\imagenes_convertidas_pdfa"
 
-# 📌 Asegurar que la carpeta de salida existe
-os.makedirs(CARPETA_SALIDA, exist_ok=True)
+# 📌 Asegurar que las carpetas de salida existen
+os.makedirs(CARPETA_SALIDA_PDF, exist_ok=True)
+os.makedirs(CARPETA_SALIDA_PDFA, exist_ok=True)
 
 # 🔍 Buscar archivos .tif en la carpeta de entrada
 archivos = [f for f in os.listdir(CARPETA_ENTRADA) if f.lower().endswith(".tif")]
 
+# Parte 1: Convertir TIFF a PDF normal
 for archivo in archivos:
     ruta_tif = os.path.join(CARPETA_ENTRADA, archivo)
-    ruta_pdf = os.path.join(CARPETA_SALIDA, archivo.replace(".tif", ".pdf"))
-    ruta_pdfa = os.path.join(CARPETA_SALIDA, archivo.replace(".tif", "_pdfa.pdf"))
+    ruta_pdf = os.path.join(CARPETA_SALIDA_PDF, archivo.replace(".tif", ".pdf"))
 
     try:
         with Image.open(ruta_tif) as img:
@@ -39,6 +42,21 @@ for archivo in archivos:
             with open(ruta_pdf, "wb") as f:
                 f.write(pdf_bytes)
 
+        print(f"✅ PDF de alta calidad (300 DPI) creado: {ruta_pdf}")
+
+    except Exception as e:
+        print(f"❌ Error con {archivo}: {e}")
+
+print("🎉 Conversión de TIFF a PDF con 300 DPI completada.")
+
+# Parte 2: Convertir PDF a PDF/A
+archivos_pdf = [f for f in os.listdir(CARPETA_SALIDA_PDF) if f.lower().endswith(".pdf")]
+
+for archivo_pdf in archivos_pdf:
+    ruta_pdf = os.path.join(CARPETA_SALIDA_PDF, archivo_pdf)
+    ruta_pdfa = os.path.join(CARPETA_SALIDA_PDFA, archivo_pdf)
+
+    try:
         # 📌 Convertir el PDF a PDF/A usando Ghostscript
         gs_command = [
             "gswin64c",  # Comando para Ghostscript en Windows
@@ -54,9 +72,12 @@ for archivo in archivos:
         ]
         subprocess.run(gs_command, check=True)
 
+        # 📌 Eliminar el archivo PDF normal después de la conversión a PDF/A
+        os.remove(ruta_pdf)
+
         print(f"✅ PDF/A de alta calidad (300 DPI, versión PDF/A) creado: {ruta_pdfa}")
 
     except Exception as e:
-        print(f"❌ Error con {archivo}: {e}")
+        print(f"❌ Error con {archivo_pdf}: {e}")
 
-print("🎉 Conversión de TIFF a PDF/A con 300 DPI completada.")
+print("🎉 Conversión de PDF a PDF/A con 300 DPI completada.")
