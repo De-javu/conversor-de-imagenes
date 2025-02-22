@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="report.xsl"?>
+<PDFAManagerReport RunDateTime="2025-Feb-22 16:27:46">
+<Validation>
+ <Fail FileName="0085.pdf" FileNameAndPath="D:\xampp\htdocs\pdf_2\imagenes_convertidas_pdf\0085.pdf">
+  <Error Code="e_PDFA122" Message="File header line not followed by % and 4 characters > 127" Refs=""/>
+  <Error Code="e_PDFA131" Message="The trailer dictionary does not contain ID" Refs=""/>
+  <Error Code="e_PDFA184" Message="'endobj' not preceded by EOL marker" Refs="2, 4, 5, 6"/>
+  <Error Code="e_PDFA185" Message="'obj' not followed by EOL marker" Refs="1, 2, 3, 4, 5, 6"/>
+  <Error Code="e_PDFA721" Message="The document catalog does not contain Metadata stream" Refs="4"/>
+  <Error Code="e_PDFA2331" Message="Device-specific color space used, but no GTS_PDFA1 OutputIntent" Refs="2"/>
+ </Fail>
+</Validation>
+<Revalidation>
+ <Pass FileName="0085_pdfa.pdf" FileNameAndPath="D:\xampp\htdocs\pdf_2\output\0085_pdfa.pdf"></Pass>
+</Revalidation>
+</PDFAManagerReport>
