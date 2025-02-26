@@ -1,12 +1,15 @@
-from PIL import Image, ImageEnhance, ImageFilter
 import os
+import time
+from PIL import Image
+import PyPDF2
+import subprocess
 
 # Rutas
-CARPETA_ENTRADA = r"E:\imagenes"
-CARPETA_SALIDA_TIFF = r"E:\imagenes_convertidas_pdfa"
+CARPETA_ENTRADA = r"D:\xampp\htdocs\pdf_2\imagenes_convertidas_optimizadas"
+CARPETA_SALIDA_PDF = r"D:\xampp\htdocs\pdf_2\imagenes_convertidas_pdf"
 
 # Asegurar que las carpetas de salida existen
-os.makedirs(CARPETA_SALIDA_TIFF, exist_ok=True)
+os.makedirs(CARPETA_SALIDA_PDF, exist_ok=True)
 
 # Buscar archivos .tif en la carpeta de entrada
 archivos = [f for f in os.listdir(CARPETA_ENTRADA) if f.lower().endswith(".tif")]
@@ -16,32 +19,77 @@ if not archivos:
 else:
     print(f"Convirtiendo {len(archivos)} archivos...")
 
+# Tiempo total de conversión
+tiempo_total_inicio = time.time()
+
 # Procesar cada imagen
 for archivo in archivos:
     ruta_tif = os.path.join(CARPETA_ENTRADA, archivo)
-    ruta_tif_opt = os.path.join(CARPETA_SALIDA_TIFF, archivo)  # Imagen optimizada
+    ruta_pdf_temp = os.path.join(CARPETA_SALIDA_PDF, archivo.replace(".tif", "_temp.pdf"))
+    ruta_pdf_final = os.path.join(CARPETA_SALIDA_PDF, archivo.replace(".tif", ".pdf"))
 
     try:
         with Image.open(ruta_tif) as img:
-            # Convertir a RGB para compatibilidad
-            img = img.convert("RGB")
+            # No realizar ninguna conversión que pueda afectar la orientación
+            img.save(
+                ruta_pdf_temp,
+                "PDF",
+                resolution=300.0,  # Resolución en DPI
+                save_all=True,
+                append_images=[],  # Para agregar más páginas (si es necesario)
+                optimize=False,  # Puedes probar con True para optimizar el tamaño
+            )
 
-            # Ajustar el contraste
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.5)  # Ajustar el factor según sea necesario
+        # Agregar metadatos al PDF temporal
+        with open(ruta_pdf_temp, "rb") as pdf_file:
+            reader = PyPDF2.PdfReader(pdf_file)
+            writer = PyPDF2.PdfWriter()
 
-            # Reducir el ruido
-            img = img.filter(ImageFilter.MedianFilter(size=3))
+            for page in reader.pages:
+                writer.add_page(page)
 
-            # Guardar la imagen optimizada sin cambiar el tamaño
-            img.save(ruta_tif_opt, format='TIFF', compression='tiff_deflate')  # Usar compresión TIFF Deflate para optimización
+            # Agregar metadatos
+            writer.add_metadata({
+                "/Producer": "IMPERIO BYTE",
+                "/Creator": "PIL",
+                "/Title": archivo.replace(".tif", " "),
+                "/Author": "IMPERIO BYTE",
+                "/Subject": "CONVERSION DE MICROFILM A DIGITAL",
+            })
 
-        print(f"Imagen optimizada: {ruta_tif_opt}")
+            with open(ruta_pdf_temp, "wb") as output_pdf:
+                writer.write(output_pdf)
+
+        # Convertir el PDF temporal a PDF 1.7 usando Ghostscript
+        gs_command = [
+            "gswin64c",  # Comando para Ghostscript en Windows
+            "-sDEVICE=pdfwrite",
+            "-dCompatibilityLevel=1.7",
+            "-o", ruta_pdf_final,
+            ruta_pdf_temp
+        ]
+        result = subprocess.run(gs_command, capture_output=True, text=True)
+
+        # Verificar si el comando se ejecutó correctamente
+        if result.returncode != 0:
+            print(f"Error con {archivo}: {result.stderr}")
+        else:
+            print(f"PDF de alta calidad (PDF 1.7) creado: {ruta_pdf_final}")
+
+        # Eliminar el archivo PDF temporal
+        os.remove(ruta_pdf_temp)
 
     except Exception as e:
-        print(f"Error inesperado con {archivo}: {e}")
+        print(f"Error con {archivo}: {e}")
 
-print("Optimización de imágenes TIFF completada.")
+# Tiempo total de conversión
+tiempo_total_fin = time.time()
+tiempo_total = tiempo_total_fin - tiempo_total_inicio
+tiempo_promedio = tiempo_total / len(archivos) if archivos else 0
+
+print(f"Total de archivos convertidos: {len(archivos)}")
+print(f"Conversión de TIFF a PDF 1.7 completada en {tiempo_total:.2f} segundos")
+print(f"Tiempo promedio por archivo: {tiempo_promedio:.2f} segundos")
 
 
 
