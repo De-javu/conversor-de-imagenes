@@ -3,27 +3,9 @@ import time
 from PIL import Image
 import PyPDF2
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 
-# Rutas
-CARPETA_ENTRADA = r"D:\xampp\htdocs\pdf_2\imagenes_convertidas_optimizadas"
-CARPETA_SALIDA_PDF = r"D:\xampp\htdocs\pdf_2\imagenes_convertidas_pdf"
-
-# Asegurar que las carpetas de salida existen
-os.makedirs(CARPETA_SALIDA_PDF, exist_ok=True)
-
-# Buscar archivos .tif en la carpeta de entrada
-archivos = [f for f in os.listdir(CARPETA_ENTRADA) if f.lower().endswith(".tif")]
-
-if not archivos:
-    print("No se encontraron archivos .tif para convertir.")
-else:
-    print(f"Convirtiendo {len(archivos)} archivos...")
-
-# Tiempo total de conversión
-tiempo_total_inicio = time.time()
-
-# Procesar cada imagen
-for archivo in archivos:
+def convertir_tiff_a_pdf(archivo):
     ruta_tif = os.path.join(CARPETA_ENTRADA, archivo)
     ruta_pdf_temp = os.path.join(CARPETA_SALIDA_PDF, archivo.replace(".tif", "_temp.pdf"))
     ruta_pdf_final = os.path.join(CARPETA_SALIDA_PDF, archivo.replace(".tif", ".pdf"))
@@ -81,6 +63,28 @@ for archivo in archivos:
 
     except Exception as e:
         print(f"Error con {archivo}: {e}")
+
+# Rutas
+CARPETA_ENTRADA = r"E:\64090N000068_GIRADO\100A"
+CARPETA_SALIDA_PDF = r"E:\64090N000068_GIRADO\100APDF"
+
+# Asegurar que las carpetas de salida existen
+os.makedirs(CARPETA_SALIDA_PDF, exist_ok=True)
+
+# Buscar archivos .tif en la carpeta de entrada
+archivos = [f for f in os.listdir(CARPETA_ENTRADA) if f.lower().endswith(".tif")]
+
+if not archivos:
+    print("No se encontraron archivos .tif para convertir.")
+else:
+    print(f"Convirtiendo {len(archivos)} archivos...")
+
+# Tiempo total de conversión
+tiempo_total_inicio = time.time()
+
+# Procesar cada imagen en paralelo
+with ThreadPoolExecutor() as executor:
+    executor.map(convertir_tiff_a_pdf, archivos)
 
 # Tiempo total de conversión
 tiempo_total_fin = time.time()
