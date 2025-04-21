@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-# Rutas a los scripts
+# Rutas a los scriptsss
 script_opt = r"D:\xampp\htdocs\pdf_2\convertir_tiff_opt.py"
 script_pdf = r"D:\xampp\htdocs\pdf_2\convertir_tiff_pdf.py"
 script_pdfa = r"D:\xampp\htdocs\pdf_2\convertir_pdf_pdfa.py"
