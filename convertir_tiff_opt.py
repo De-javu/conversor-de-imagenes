@@ -7,8 +7,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 def convertir_tiff_a_pdf(archivo):
     ruta_tif = os.path.join(CARPETA_ENTRADA, archivo)
-    ruta_pdf_temp = os.path.join(CARPETA_SALIDA_PDF, archivo.replace(".tif", "_temp.pdf"))
-    ruta_pdf_final = os.path.join(CARPETA_SALIDA_PDF, archivo.replace(".tif", ".pdf"))
+    ruta_pdf_temp = os.path.join(CARPETA_SALIDA_PDF, archivo.rsplit(".", 1)[0] + "_temp.pdf")
+    ruta_pdf_final = os.path.join(CARPETA_SALIDA_PDF, archivo.rsplit(".", 1)[0] + ".pdf")
 
     try:
         with Image.open(ruta_tif) as img:
@@ -34,7 +34,7 @@ def convertir_tiff_a_pdf(archivo):
             writer.add_metadata({
                 "/Producer": "IMPERIO BYTE",
                 "/Creator": "PIL",
-                "/Title": archivo.replace(".tif", " "),
+                "/Title": archivo.rsplit(".", 1)[0],
                 "/Author": "IMPERIO BYTE",
                 "/Subject": "CONVERSION DE MICROFILM A DIGITAL",
             })
@@ -65,17 +65,17 @@ def convertir_tiff_a_pdf(archivo):
         print(f"Error con {archivo}: {e}")
 
 # Rutas
-CARPETA_ENTRADA = r"E:\64090N000068_GIRADO\100A"
-CARPETA_SALIDA_PDF = r"E:\64090N000068_GIRADO\100APDF"
+CARPETA_ENTRADA = r"E:\pruebas"
+CARPETA_SALIDA_PDF = r"E:\pruebasPDF"
 
 # Asegurar que las carpetas de salida existen
 os.makedirs(CARPETA_SALIDA_PDF, exist_ok=True)
 
-# Buscar archivos .tif en la carpeta de entrada
-archivos = [f for f in os.listdir(CARPETA_ENTRADA) if f.lower().endswith(".tif")]
+# Buscar archivos .tif o .tiff en la carpeta de entrada
+archivos = [f for f in os.listdir(CARPETA_ENTRADA) if f.lower().endswith((".tif", ".tiff"))]
 
 if not archivos:
-    print("No se encontraron archivos .tif para convertir.")
+    print("No se encontraron archivos .tif o .tiff para convertir.")
 else:
     print(f"Convirtiendo {len(archivos)} archivos...")
 
@@ -94,6 +94,9 @@ tiempo_promedio = tiempo_total / len(archivos) if archivos else 0
 print(f"Total de archivos convertidos: {len(archivos)}")
 print(f"Conversión de TIFF a PDF 1.7 completada en {tiempo_total:.2f} segundos")
 print(f"Tiempo promedio por archivo: {tiempo_promedio:.2f} segundos")
+print("minutos:", tiempo_total // 60)
+print("segundos:", tiempo_total % 60)
+print("Proceso finalizado.")
 
 
 

@@ -2,8 +2,8 @@ import os
 from PIL import Image
 
 # Rutas
-CARPETA_ENTRADA = r"D:\xampp\htdocs\pdf_2\imagenes_convertidas_optimizadas"
-CARPETA_SALIDA_PDF = r"D:\xampp\htdocs\pdf_2\imagenes_convertidas_pdf"
+CARPETA_ENTRADA = r"E:\tiff\64090N000401\80ATIFF"
+CARPETA_SALIDA_PDF = r"E:\tiff\64090N000401\80ATIFF\pdf"
 
 # Asegurar que las carpetas de salida existen
 os.makedirs(CARPETA_SALIDA_PDF, exist_ok=True)
