@@ -3,7 +3,7 @@ import img2pdf
 from PIL import Image
 import subprocess
 
-# 📂 Rutas
+# 📂 Rutassssss
 CARPETA_ENTRADA = r"E:\imagenes"
 CARPETA_SALIDA_PDF = r"E:\imagenes_convertidas_pdf"
 CARPETA_SALIDA_PDFA = r"E:\imagenes_convertidas_pdfa"
