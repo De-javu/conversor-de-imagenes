@@ -3,6 +3,7 @@ import time
 from PIL import Image
 from PyPDF2 import PdfWriter
 from io import BytesIO
+from concurrent.futures import ThreadPoolExecutor
 
 def agrupar_archivos_en_pdf(ruta_carpeta, ruta_salida, nombre_carpeta):
     """
@@ -35,6 +36,15 @@ def agrupar_archivos_en_pdf(ruta_carpeta, ruta_salida, nombre_carpeta):
     # Guardar el archivo PDF combinado en la ruta de salida
     salida_pdf = os.path.join(ruta_salida, f"{nombre_carpeta}.pdf")
     if writer.pages:  # Verificar si hay páginas para combinar
+         # Agregar metadatos al PDF
+        writer.add_metadata({
+        "/Title": f"PDF generado para {nombre_carpeta}",
+        "/Author": "IMPERIO BYTE",
+        "/Subject": "Conversión de microfilm a digital",
+        "/Keywords": "TIFF, PDF, conversión",
+        "/Creator": "PyPDF2",
+        "/Producer": "PyPDF2"
+    })
         os.makedirs(ruta_salida, exist_ok=True)  # Crear la ruta de salida si no existe
         with open(salida_pdf, "wb") as f:
             writer.write(f)
@@ -42,9 +52,17 @@ def agrupar_archivos_en_pdf(ruta_carpeta, ruta_salida, nombre_carpeta):
     else:
         print(f"No se encontraron archivos TIFF en la carpeta: {ruta_carpeta}")
 
+def procesar_carpeta(carpeta_raiz, ruta_salida):
+    """
+    Procesa una carpeta específica y genera el PDF correspondiente.
+    """
+    nombre_carpeta = os.path.basename(carpeta_raiz)  # Obtener el nombre de la carpeta
+    print(f"Procesando carpeta: {carpeta_raiz}")
+    agrupar_archivos_en_pdf(carpeta_raiz, ruta_salida, nombre_carpeta)
+
 def main():
     """
-    Solicita la ruta principal y procesa cada carpeta dentro de ella.
+    Solicita la ruta principal y procesa cada carpeta dentro de ella en paralelo.
     """
     # Solicitar la ruta principal
     ruta_principal = input("Introduce la ruta principal donde buscar las carpetas: ").strip()
@@ -58,28 +76,21 @@ def main():
     os.makedirs(ruta_salida, exist_ok=True)
 
     # Medir tiempos de procesamiento
-    tiempos = []
     total_inicio = time.time()
 
-    # Recorrer todas las carpetas dentro de la ruta principal
-    for carpeta_raiz, subcarpetas, archivos in os.walk(ruta_principal):
-        if archivos:  # Si la carpeta contiene archivos
-            nombre_carpeta = os.path.basename(carpeta_raiz)  # Obtener el nombre de la carpeta
-            print(f"Procesando carpeta: {carpeta_raiz}")
-            inicio = time.time()
-            agrupar_archivos_en_pdf(carpeta_raiz, ruta_salida, nombre_carpeta)
-            fin = time.time()
-            tiempos.append(fin - inicio)
+    # Recopilar todas las carpetas con archivos
+    carpetas = [os.path.join(ruta_principal, carpeta) for carpeta in os.listdir(ruta_principal) if os.path.isdir(os.path.join(ruta_principal, carpeta))]
+
+    # Procesar carpetas en paralelo
+    with ThreadPoolExecutor() as executor:
+        executor.map(lambda carpeta: procesar_carpeta(carpeta, ruta_salida), carpetas)
 
     total_fin = time.time()
 
     # Calcular tiempos
     total_tiempo = total_fin - total_inicio
-    promedio_tiempo = sum(tiempos) / len(tiempos) if tiempos else 0
-
     print("\n--- Resumen de tiempos ---")
     print(f"Tiempo total de procesamiento: {int(total_tiempo // 60)} minutos, {total_tiempo % 60:.2f} segundos")
-    print(f"Tiempo promedio por archivo: {promedio_tiempo:.2f} segundos")
 
 if __name__ == "__main__":
     main()
